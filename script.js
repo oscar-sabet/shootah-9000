@@ -18,6 +18,7 @@ ctx.fillStyle = 'black'
 ctx.textAlign = 'left'
 ctx.textBaseline = 'top'
 
+// Gameover variables
 let gameOver = false
 const gameOverText = 'Game Over!'
 const refreshText = 'Refresh to play again'
@@ -25,7 +26,8 @@ const refreshText = 'Refresh to play again'
 // Gameover variable
 let toggle = true
 
-// let mouseText = "I'm a mouse!"
+// Pause Variables
+let pause = false
 
 // Score variables
 const hitPoints = 10
@@ -109,6 +111,15 @@ function gameOverLoop () {
   setInterval(gameOverLoop, 400)
 }
 
+function pauseGame () {
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.font = '64px Montserrat'
+  ctx.fillText(
+    'Paused',
+    canvas.width / 2 - ctx.measureText('Paused').width / 2,
+    canvas.height / 2
+  )
+}
 const playButton = document.getElementById('playButton')
 playButton.addEventListener('click', () => {
   if (isPlaying) {
@@ -128,6 +139,22 @@ muteButton.addEventListener('click', () => {
   isMuted = !isMuted
   backgroundMusic.muted = isMuted
   muteButton.textContent = isMuted ? 'Unmute' : 'Mute'
+})
+
+// Add event listener to the pause button
+const pauseButton = document.getElementById('pauseButton')
+pauseButton.addEventListener('click', () => {
+  pause = !pause
+  if (pause) {
+    backgroundMusic.pause()
+    pauseGame()
+  } else {
+    backgroundMusic.play()
+    draw()
+  }
+  pauseButton.textContent = pause ? '▶️' : '⏸️'
+  // pauseButton.textContent = isPlaying ? '▶️' : '⏸️'
+  // muteButton.textContent = isMuted ? '▶️' : '⏸️'
 })
 
 canvas.addEventListener('mousemove', e => {
@@ -330,36 +357,26 @@ function draw () {
       collisionWithShip({ x: mouseX - 25, y: mouseY - 50 }, enemies[i]) &&
       !playerHit
     ) {
-      // Handle collision with the player ship (e.g., end game or reduce lives)
-      // numLives--
       playerHit = true
       playerHitTime = Date.now()
       if (numLives === 0) {
         gameOver = true
-        // ctx.font = '48px Montserrat'
-        // let l = ctx.measureText('Game Over!')
-        // ctx.fillText(
-        //   'Game Over!',
-        //   canvas.width / 2 - l.width,
-        //   canvas.height / 2
-        // )
-        // l = ctx.measureText('Refresh to play again')
-        // console.log(l.width)
-        // ctx.fillText(
-        //   'Refresh to play again',
-        //   canvas.width / 2 - l.width,
-        //   canvas.height / 2 + 50
-        // )
       }
       updateLives()
       break
-      // return
     }
   }
 
   // ctx.drawImage(playerShip, mouseX - 25, mouseY - 50, 50, 100)
-  if (!gameOver) {
+  if (!gameOver && !pause) {
     requestAnimationFrame(draw)
+  } else if (!gameOver && pause) {
+    ctx.font = '48px Montserrat'
+    ctx.fillText(
+      'Paused',
+      canvas.width / 2 - ctx.measureText('Paused').width / 2,
+      canvas.height / 2
+    )
   } else {
     gameOverLoop()
   }
